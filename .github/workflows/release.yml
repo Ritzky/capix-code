@@ -14,8 +14,49 @@ permissions:
   contents: write
 
 jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create.outputs.upload_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create release
+        id: create
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Capix Code ${{ github.ref_name }}
+          body: |
+            ## Capix Code ${{ github.ref_name }}
+
+            A fork of [opencode](https://github.com/anomalyco/opencode) with a built-in Capix LLM provider — the CLI coding assistant for the Capix network.
+
+            ### Install
+
+            ```bash
+            curl -fsSL https://capix.network/install-code.sh | bash
+            ```
+
+            Or download the appropriate binary for your platform below.
+
+            ### Quick start
+
+            ```bash
+            export CAPIX_BASE_URL=https://capix.network/api/v1
+            export CAPIX_API_KEY=cpk_...
+            capix-code
+            ```
+          draft: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     name: Build (${{ matrix.os }}-${{ matrix.arch }})
+    needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -55,42 +96,26 @@ jobs:
         shell: bash
 
       - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: capix-code-${{ matrix.platform }}-${{ matrix.arch }}
           path: opencode/packages/opencode/dist/*/bin/capix-code*
 
-  release:
-    name: Publish GitHub Release
-    needs: build
+  publish:
+    name: Upload binaries to release
+    needs: [create-release, build]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
 
-      - name: Create release
+      - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name || format('v{0}', inputs.version) }}
-          name: Capix Code ${{ github.ref_name || format('v{0}', inputs.version) }}
+          tag_name: ${{ github.ref_name }}
           files: dist/**/capix-code*
-          body: |
-            ## Capix Code
-
-            A fork of [opencode](https://github.com/anomalyco/opencode) with a built-in Capix LLM provider.
-
-            Install:
-            ```bash
-            curl -fsSL https://capix.network/install-code.sh | bash
-            ```
-
-            Then:
-            ```bash
-            export CAPIX_BASE_URL=https://capix.network/api/v1
-            export CAPIX_API_KEY=cpk_...  # or your deployed cpxllm_... key
-            capix-code
-            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
