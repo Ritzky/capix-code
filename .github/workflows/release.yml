@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. 1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: ubuntu-latest
+            platform: linux
+            arch: arm64
+          - os: windows-latest
+            platform: win32
+            arch: x64
+
+    steps:
+      - name: Checkout capix-code repo
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Clone + rebrand opencode
+        run: ./scripts/bootstrap.sh
+        shell: bash
+
+      - name: Build standalone binary
+        run: ./scripts/build.sh
+        shell: bash
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: capix-code-${{ matrix.platform }}-${{ matrix.arch }}
+          path: opencode/packages/opencode/dist/*/bin/capix-code*
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name || format('v{0}', inputs.version) }}
+          name: Capix Code ${{ github.ref_name || format('v{0}', inputs.version) }}
+          files: dist/**/capix-code*
+          body: |
+            ## Capix Code
+
+            A fork of [opencode](https://github.com/anomalyco/opencode) with a built-in Capix LLM provider.
+
+            Install:
+            ```bash
+            curl -fsSL https://capix.network/install-code.sh | bash
+            ```
+
+            Then:
+            ```bash
+            export CAPIX_BASE_URL=https://capix.network/api/v1
+            export CAPIX_API_KEY=cpk_...  # or your deployed cpxllm_... key
+            capix-code
+            ```
