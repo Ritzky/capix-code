@@ -1,0 +1,21 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Capix mark — a hexagonal node with an infinity/circuit motif -->
+  <defs>
+    <linearGradient id="capixGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3DCED6"/>
+      <stop offset="100%" stop-color="#14F195"/>
+    </linearGradient>
+  </defs>
+  <!-- Hexagon outer ring -->
+  <polygon points="64,8 112,36 112,92 64,120 16,92 16,36" fill="none" stroke="url(#capixGrad)" stroke-width="3"/>
+  <!-- Inner hexagon -->
+  <polygon points="64,24 96,42 96,86 64,104 32,86 32,42" fill="rgba(61,206,214,0.06)" stroke="rgba(61,206,214,0.20)" stroke-width="1.5"/>
+  <!-- Circuit lines forming "C" shape -->
+  <path d="M44 52 L44 76 Q44 84 52 84 L64 84 M84 52 L84 76 Q84 84 76 84 L64 84 M64 48 L64 88" stroke="url(#capixGrad)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- Connection nodes -->
+  <circle cx="64" cy="84" r="4" fill="#14F195"/>
+  <circle cx="44" cy="52" r="3" fill="#3DCED6"/>
+  <circle cx="84" cy="52" r="3" fill="#3DCED6"/>
+  <!-- Top node -->
+  <circle cx="64" cy="8" r="3" fill="#3DCED6"/>
+</svg>

@@ -72,3 +72,89 @@ WRAPPER_EOF
 fi
 
 echo "✓ Capix provider config installed."
+
+# 3. Install the Capix TUI theme + color tokens
+THEME_SRC="$DIR/themes/capix.toml"
+TUI_SRC="$DIR/tui-capix.json"
+THEME_DEST="$OPENCODE_DIR/packages/opencode/config/themes"
+mkdir -p "$THEME_DEST"
+cp "$THEME_SRC" "$THEME_DEST/capix.toml" 2>/dev/null || true
+cp "$TUI_SRC" "$OPENCODE_DIR/packages/opencode/config/tui-capix.json" 2>/dev/null || true
+echo "  ✓ TUI theme installed (capix.toml + tui-capix.json)"
+
+# 4. Copy the brand assets
+BRAND_SRC="$DIR/brand"
+BRAND_DEST="$OPENCODE_DIR/packages/opencode/config/brand"
+mkdir -p "$BRAND_DEST"
+cp -R "$BRAND_SRC/"* "$BRAND_DEST/" 2>/dev/null || true
+echo "  ✓ Brand assets (logo SVG + banner) installed"
+
+# 5. Patch the TUI init to show the Capix banner + set default theme
+TUI_INIT="$OPENCODE_DIR/packages/opencode/scripts/init-capix-tui.ts"
+cat > "$TUI_INIT" << 'TUI_EOF'
+/**
+ * init-capix-tui.ts — sets the Capix theme as default + shows the launch banner.
+ * Called before the TUI boots. Writes ~/.config/capix-code/tui.json with
+ * theme: "capix" if no user TUI config exists.
+ */
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+// Set the default TUI theme to "capix" if no user config exists.
+function getConfigDir(): string {
+  switch (process.platform) {
+    case "darwin": return join(homedir(), "Library", "Application Support", "capix-code");
+    case "win32": return join(homedir(), "AppData", "Roaming", "capix-code");
+    default: return join(homedir(), ".config", "capix-code");
+  }
+}
+
+const configDir = getConfigDir();
+const tuiConfig = join(configDir, "tui.json");
+
+// Copy the bundled theme file to the user's themes dir.
+const themesDir = join(configDir, "themes");
+const bundledTheme = join(import.meta.dir, "..", "config", "themes", "capix.toml");
+
+if (existsSync(bundledTheme)) {
+  mkdirSync(themesDir, { recursive: true });
+  const themeDest = join(themesDir, "capix.toml");
+  if (!existsSync(themeDest)) {
+    writeFileSync(themeDest, readFileSync(bundledTheme, "utf-8"), "utf-8");
+  }
+}
+
+// Write the default TUI config if no user config exists.
+if (!existsSync(tuiConfig)) {
+  const defaultTui = {
+    "$schema": "https://opencode.ai/tui.json",
+    "theme": "capix",
+    "scroll_speed": 3,
+    "scroll_acceleration": { "enabled": true },
+    "diff_style": "auto",
+    "mouse": true,
+    "attention": { "enabled": true, "notifications": true, "sound": true, "volume": 0.4 },
+  };
+  mkdirSync(configDir, { recursive: true });
+  writeFileSync(tuiConfig, JSON.stringify(defaultTui, null, 2), "utf-8");
+}
+
+// Print the launch banner.
+const BANNER = `
+\\x1b[38;2;61;206;214m  ██████╗ █████╗ ██████╗ ██████╗ ██╗   ██╗██╗███████╗██╗  ██╗
+ ██╔════╝██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝██║██╔════╝╚██╗██╔╝
+ ██║     ███████║██████╔╝██████╔╝ ╚████╔╝ ██║█████╗   ╚███╔╝
+ ██║     ██╔══██║██╔══██╗██╔══██╗   ╚██╔╝  ██║██╔══╝   ██╔██╗
+ ╚██████╗██║  ██║██████╔╝██║  ██║    ██║   ██║███████╗██╔╝ ██╗
+  ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝    ╚═╝   ╚═╝╚══════╝╚═╝  ╚═╝\\x1b[0m
+
+  \\x1b[38;2;20;241;149m◆\\x1b[0m \\x1b[38;2;100;116;139mRoute compute, inference, and agents.\\x1b[0m
+  \\x1b[2mPowered by opencode × Capix\\x1b[0m
+`;
+// Use raw write to stdout so ANSI codes are interpreted.
+process.stdout.write(BANNER.replace(/\\\\x1b/g, "\\x1b") + "\\n");
+TUI_EOF
+echo "  ✓ TUI init script (theme + banner) created"
+
+echo "✓ Capix branding fully installed."

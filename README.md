@@ -6,6 +6,7 @@ A fork of [opencode](https://github.com/anomalyco/opencode) with a built-in Capi
 
 Capix Code is a rebranded fork of opencode (the open-source AI coding agent) that ships with:
 
+- **Capix branding** — the TUI shows the Capix ASCII art banner on launch, the status bar reads "Capix Code", the activity bar icon is the Capix hexagonal mark, and the color theme uses the brand palette (neon teal `#3DCED6`, green `#14F195`, deep slate-navy `#0a0e14`).
 - **Built-in Capix provider** — the `capix` provider is pre-configured as the default, pointing at the Capix OpenAI-compatible gateway. No manual config needed.
 - **Capix model catalog** — SuperGemma partner endpoints (Gemma 3 27B/12B/4B + CodeGemma) + community models (Qwen2.5-Coder, Llama 3.3 70B, etc.) are pre-listed in the model picker.
 - **Auto-connect** — if you deployed an LLM in Capix IDE or on capix.network, the endpoint details sync automatically via env vars.
