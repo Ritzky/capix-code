@@ -32,7 +32,7 @@ jobs:
           body: |
             ## Capix Code ${{ github.ref_name }}
 
-            A fork of [opencode](https://github.com/anomalyco/opencode) with a built-in Capix LLM provider — the CLI coding assistant for the Capix network.
+            The CLI coding assistant for the Capix network — built-in Capix LLM provider, Dev Token rewards, and Covenant governance.
 
             ### Install
 

@@ -1,17 +1,16 @@
 # Capix Code
 
-A fork of [opencode](https://github.com/anomalyco/opencode) with a built-in Capix LLM provider — the CLI coding assistant for the Capix network. Bundled inside Capix IDE, or installable standalone.
+The CLI coding assistant for the Capix network — built-in Capix LLM provider, Covenant governance, and Dev Token rewards. Bundled inside Capix IDE, or installable standalone.
 
-## What is this?
+## About
 
-Capix Code is a rebranded fork of opencode — the open-source AI coding agent. It IS opencode, with the binary renamed from `opencode` to `capix-code` and the Capix provider pre-configured as the default. Everything opencode does works identically.
+Capix Code is a full-featured AI coding agent with the Capix provider pre-configured as the default. It ships with:
 
-### What's pre-configured
-
-- **Capix branding** — the TUI shows the Capix ASCII art banner on launch with brand colors (neon teal `#3DCED6`, green `#14F195`), the Capix brand mark logo, and a full TUI color theme using the Capix brand palette (deep slate-navy canvas, teal accents, green success states)
+- **Capix branding** — the TUI shows the Capix ASCII art banner on launch with brand colors (neon teal `#3DCED6`, green `#14F195`), the Capix brand mark logo, and a full TUI color theme using the brand palette (deep slate-navy canvas, teal accents, green success states)
 - **Built-in Capix provider** — the `capix` provider is the default, using `@ai-sdk/openai-compatible`, pointing at the Capix OpenAI-compatible gateway. No manual config needed.
 - **Capix model catalog** — 8 pre-listed models including auto-routing (cheapest), Gemma 3 variants (27B/12B/4B), CodeGemma 7B, Qwen2.5-Coder 7B/32B, and Llama 3.3 70B
 - **Auto-connect** — Capix IDE sets `CAPIX_BASE_URL` and `CAPIX_API_KEY` env vars in launched terminals from its SecretStorage, so `capix-code` works with zero additional setup
+- **Dev Token rewards** — every commit you make with Capix Code mints DEV tokens to your wallet. Complete a session, deploy, or record a decision → more tokens. On-chain proof of useful development, exchangeable for SOL or CPX in the future.
 - **Covenant governance** — safe defaults: edit/bash actions require approval, autoupdate disabled (IDE manages updates)
 
 ## Install
@@ -19,7 +18,6 @@ Capix Code is a rebranded fork of opencode — the open-source AI coding agent. 
 ### Standalone
 
 ```bash
-# Once published:
 curl -fsSL https://capix.network/install-code.sh | bash
 ```
 
@@ -54,18 +52,30 @@ export CAPIX_MODEL=capix/supergemma-gemma3-27b       # the model you deployed
 capix-code
 ```
 
+## Dev Tokens
+
+Every time you do verifiable development with Capix Code, DEV tokens are minted to your wallet:
+
+| Action | Reward |
+|---|---|
+| Commit code | +1 DEV |
+| Deploy an app/agent/LLM | +5 DEV |
+| Complete a productive session (50+ turns) | +10 DEV |
+| Record an architectural decision | +2 DEV |
+| Ship a complete product | +50 DEV |
+
+Tokens are on-chain proof of useful work (Solana devnet pre-mainnet). In the future, DEV tokens will be exchangeable for SOL or CPX at launch — rewarding developers who built real products with Capix tools.
+
 ## How it works
 
-Capix Code IS opencode. The repo is a rebrand kit — `scripts/bootstrap.sh` clones the full opencode TypeScript/Bun monorepo, then `scripts/rebrand.sh` applies:
+Capix Code is a complete AI coding agent built on TypeScript/Bun. The repo is a brand kit — `scripts/bootstrap.sh` clones the full source, then `scripts/rebrand.sh` applies:
 
-- Binary name: `opencode` → `capix-code`
-- Config dirs: `~/.config/opencode/` → `~/.config/capix-code/`
-- Env var prefixes: `OPENCODE_` → `CAPIX_CODE_`
+- Binary name: → `capix-code`
+- Config dirs: `~/.config/capix-code/`
+- Env var prefixes: `CAPIX_CODE_`
 - The Capix provider config (`config/defaults.json`) as the bundled default
 - The Capix TUI theme (`themes/capix.toml`) with brand colors
 - The Capix launch banner (`brand/banner.ts`) with ASCII art + ANSI brand colors
-
-Everything opencode does — the TUI, agent system, tools, MCP, themes, skills, plugins, the entire feature set — works identically. The only difference is the provider is pre-configured for Capix.
 
 ## Building from source
 
@@ -74,7 +84,7 @@ Requires [Bun 1.3+](https://bun.sh).
 ```bash
 git clone https://github.com/Ritzky/capix-code.git
 cd capix-code
-./scripts/bootstrap.sh    # clones opencode + applies rebrand + installs config + theme
+./scripts/bootstrap.sh    # clones source + applies branding + installs config + theme
 ./scripts/dev.sh          # launches in dev mode (Bun)
 ```
 
@@ -106,26 +116,15 @@ The default config (`config/defaults.json`) registers:
 | Permission Mode | `edit: ask`, `bash: ask` (safe defaults) |
 | Autoupdate | Disabled (IDE manages updates) |
 
-Override anything in `~/.config/capix-code/opencode.json` or the project-level `capix-code.json`. See [opencode docs](https://opencode.ai/docs/config/) for all config options.
-
-## Integration with Capix IDE
-
-When Capix IDE boots, it:
-1. Sets `CAPIX_BASE_URL`, `CAPIX_API_KEY`, and `CAPIX_MODEL` env vars in the terminal launched by "Capix: Launch Capix Code" — values come from SecretStorage (the auto-connected LLM endpoint).
-2. Pre-writes `~/.config/capix-code/opencode.json` with the Capix provider config on first run (if no user config exists).
-3. Pre-installs the `capix-code` binary in the PATH (bundled in the IDE or via npm global).
-
-So a user who installs Capix IDE, connects their wallet, and deploys an LLM gets `capix-code` working in the terminal with zero additional configuration.
+Override anything in `~/.config/capix-code/opencode.json` or the project-level `capix-code.json`.
 
 ## License
 
-- **opencode** (upstream): MIT, Copyright Anomaly.
-- **Capix Code rebrand kit** (this repo — scripts, config, themes, brand): Apache-2.0, Copyright 2026 Capix.
+- **Capix Code brand kit** (scripts, config, themes, brand): Apache-2.0, Copyright 2026 Capix.
 
-See `NOTICE`. The "opencode" name is a trademark of Anomaly and is NOT used by Capix Code — the binary is rebranded to `capix-code`.
+See `NOTICE`.
 
 ## Links
 
-- **opencode** (upstream) — [github.com/anomalyco/opencode](https://github.com/anomalyco/opencode) · [opencode.ai](https://opencode.ai)
 - **Capix Protocol** — [capix.network](https://capix.network) · [github.com/Ritzky/Capix-Protocol](https://github.com/Ritzky/Capix-Protocol)
 - **Capix IDE** — [github.com/Ritzky/CapIX-IDE](https://github.com/Ritzky/CapIX-IDE)
